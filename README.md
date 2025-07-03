@@ -11,6 +11,7 @@ Players take turns placing their pieces (X or O) on an unlimited grid. The first
 - **Proximity Rules**: New pieces must be placed within 3 moves of existing pieces
 - **Real-time Win Detection**: Instant victory checking after each move
 - **Dynamic Board Display**: View only the relevant game area with padding
+- **Rainbow Color Output**: All game text displays in cycling rainbow colors (ROYGBIV)
 
 ## Game Rules
 
@@ -25,6 +26,7 @@ Players take turns placing their pieces (X or O) on an unlimited grid. The first
 - **Player**: Stores player identity and game symbol
 - **Board**: Manages game state, validates moves, detects wins, handles rendering
 - **Game**: Orchestrates gameplay, manages turns, processes user input
+- **ColorPrinter**: Handles rainbow color cycling for all console output
 - **GameExit**: Custom exception for clean game termination
 
 ### Data Structures

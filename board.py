@@ -130,18 +130,20 @@ class Board:
             self.max_y + pad   # Top boundary with padding
         )
 
-    def render(self, pad: int = 3) -> None:
+    def render(self, printer, pad: int = 3) -> None:
         """
-        Display the current board state to the console.
+        Display the current board state to the console using colored output.
         
         Args:
+            printer: ColorPrinter instance for colored output
             pad: Number of empty spaces to show around the board edges
         """
         min_x, max_x, min_y, max_y = self.get_bounds(pad)
         
         # Print column headers: "   " (3 spaces for alignment) + "".join() (no separator) 
         # + f"{x:>3}" (each x-coordinate formatted as 3-char wide, right-aligned string)
-        print("   " + "".join(f"{x:>3}" for x in range(min_x, max_x + 1)))
+        header = "   " + "".join(f"{x:>3}" for x in range(min_x, max_x + 1))
+        printer.print_colored(header)
         
         # Print each row with row number and content
         for y in range(min_y, max_y + 1):  # Loop through each y-coordinate (row) from top to bottom
@@ -149,4 +151,4 @@ class Board:
             # format each as 3-char wide right-aligned, then join with no separator
             row_content = "".join(f"{self.state.get((x, y), '.'):>3}" for x in range(min_x, max_x + 1))
             # Print row: f"{y:>3}" (row number right-aligned in 3 chars) + row content
-            print(f"{y:>3}" + row_content)
+            printer.print_colored(f"{y:>3}" + row_content)

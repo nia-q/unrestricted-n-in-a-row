@@ -8,6 +8,7 @@ n-row/
 ├── game.py         # Game class + GameExit exception
 ├── board.py        # Board class with game logic
 ├── player.py       # Player class for player data
+├── color_printer.py # ColorPrinter class for rainbow output
 ├── README.md       # User-facing documentation
 └── DEVELOPMENT.md  # This technical reference
 ```
@@ -31,6 +32,50 @@ get_name() -> str
     # Returns player's name
 get_symbol() -> str
     # Returns player's symbol
+```
+
+---
+
+### `ColorPrinter` Class (`color_printer.py`)
+**Responsibility**: Rainbow color cycling for all console output
+
+#### Attributes
+```python
+COLORS: list[str]         # ANSI color codes for ROYGBIV rainbow sequence
+RESET: str               # ANSI reset code to return to default color
+color_index: int         # Current position in color cycle (0-6)
+```
+
+#### Methods
+```python
+__init__() -> None
+    # Initialize with ROYGBIV color sequence and reset index to 0
+    # Colors: Red, Orange, Yellow, Green, Blue, Indigo, Violet
+
+print_colored(message: str = "") -> None
+    # Print message in current rainbow color, then advance to next color
+    # Algorithm: Apply current color → print → increment index (with wraparound)
+    # Automatic cycling: Red → Orange → Yellow → Green → Blue → Indigo → Violet → Red...
+
+reset_colors() -> None
+    # Reset color cycling back to beginning (Red)
+    # Used for starting fresh color sequences
+```
+
+**Color Implementation Details**:
+- **ANSI Color Codes**: Standard terminal escape sequences for colors
+- **Rainbow Sequence**: `['\033[91m', '\033[33m', '\033[93m', '\033[32m', '\033[94m', '\033[95m', '\033[96m']`
+- **Reset Code**: `'\033[0m'` restores terminal default color
+- **Cycling Logic**: `color_index = (color_index + 1) % len(COLORS)` for automatic wraparound
+- **Format**: `f"{color}{message}{reset}"` ensures proper color boundaries
+
+**Usage Pattern**:
+```python
+printer = ColorPrinter()
+printer.print_colored("This is red")      # Red text
+printer.print_colored("This is orange")   # Orange text  
+printer.print_colored("This is yellow")   # Yellow text
+# Colors continue cycling automatically...
 ```
 
 ---
@@ -95,13 +140,15 @@ get_bounds(pad: int = 3) -> tuple[int, int, int, int]
     # Calculate rendering boundaries with padding
     # Returns: (min_x-pad, max_x+pad, min_y-pad, max_y+pad)
 
-render(pad: int = 3) -> None
-    # Display board to console
+render(printer: ColorPrinter, pad: int = 3) -> None
+    # Display board to console using colored output
+    # Args: printer - ColorPrinter instance for rainbow colored output
     # Algorithm:
     #   1. Calculate bounds with padding
-    #   2. Print column headers (x-coordinates)
-    #   3. Print each row with y-coordinate and content
+    #   2. Print column headers (x-coordinates) in color
+    #   3. Print each row with y-coordinate and content in color
     #   4. Use 3-character formatting for alignment
+    #   5. Each line automatically advances to next rainbow color
 ```
 
 **Rendering Implementation**:
@@ -125,6 +172,7 @@ players: List[Player]              # List of 2 players [X, O]
 board: Board                       # Game board instance
 current_player: Player             # Currently active player
 _current_player_index: int         # Index for turn switching (0 or 1)
+printer: ColorPrinter              # Rainbow color output handler
 ```
 
 #### Methods
@@ -134,6 +182,7 @@ _current_player_index: int         # Index for turn switching (0 or 1)
 __init__(player1_name: str, player2_name: str) -> None
     # Initialize game with 2 players
     # Create board, set first player
+    # Initialize ColorPrinter for rainbow output
 
 switch_turns() -> None
     # Alternate between players
@@ -216,10 +265,19 @@ except KeyboardInterrupt:
 
 ### Data Flow
 **main.py** → **game.py** → **board.py** → **player.py**
+**color_printer.py** → **All output operations**
 - **Input handling**: `game.py`
 - **Game logic**: `board.py` 
 - **Orchestration**: `game.py`
 - **Data storage**: `player.py`
+- **Output formatting**: `color_printer.py` (rainbow color cycling)
+
+#### Color Flow Integration
+1. **main.py** creates ColorPrinter for initial prompts
+2. **Game** creates separate ColorPrinter instance for game output
+3. **Board.render()** receives ColorPrinter from Game
+4. All print statements replaced with `printer.print_colored()`
+5. Colors cycle automatically: Red → Orange → Yellow → Green → Blue → Indigo → Violet → repeat
 
 ## Algorithm Analysis
 
@@ -277,6 +335,8 @@ except KeyboardInterrupt:
 4. **Boundary Updates**: Coordinate tracking accuracy
 5. **Turn Switching**: Alternation logic
 6. **Input Parsing**: Various formats and edge cases
+7. **Color Cycling**: Rainbow sequence correctness and automatic advancement
+8. **Color Integration**: All output properly formatted with colors
 
 ### Performance Testing
 - **Large Boards**: Many pieces placed (memory usage)

@@ -1,6 +1,7 @@
 from typing import List
 from player import Player
 from board import Board
+from color_printer import ColorPrinter
 
 
 class GameExit(Exception):
@@ -30,6 +31,9 @@ class Game:
         
         # Track current player index for easy switching
         self._current_player_index: int = 0
+        
+        # Initialize color printer for rainbow output
+        self.printer: ColorPrinter = ColorPrinter()
     
     def switch_turns(self) -> None:
         """
@@ -59,10 +63,11 @@ class Game:
                 # Display whose turn it is
                 player_name = self.current_player.get_name()
                 player_symbol = self.current_player.get_symbol()
-                print(f"\n{player_name}'s turn ({player_symbol})")
+                self.printer.print_colored(f"\n{player_name}'s turn ({player_symbol})")
                 
                 # Get coordinate pair input from player
-                coords_input = input("Enter coordinates (x,y): ").strip()
+                self.printer.print_colored("Enter coordinates (x,y): ")
+                coords_input = input().strip()
                 
                 # Check for exit commands
                 if coords_input in {"exit", "quit"}:
@@ -88,16 +93,16 @@ class Game:
                     return (x, y)  # Valid move, return coordinates
                 else:
                     # Invalid move, explain the rules and ask again
-                    print("Invalid move! Remember:")
-                    print("- Can't place on occupied space")
-                    print("- Must be within 3 moves of existing piece (except first move)")
+                    self.printer.print_colored("Invalid move! Remember:")
+                    self.printer.print_colored("- Can't place on occupied space")
+                    self.printer.print_colored("- Must be within 3 moves of existing piece (except first move)")
                     
             except ValueError:
                 # Handle parsing errors gracefully
-                print("Please enter coordinates as 'x,y' or 'x y' (e.g., '3,4' or '3 4')")
+                self.printer.print_colored("Please enter coordinates as 'x,y' or 'x y' (e.g., '3,4' or '3 4')")
             except KeyboardInterrupt:
                 # Handle Ctrl+C gracefully
-                print("\nGame interrupted by user.")
+                self.printer.print_colored("\nGame interrupted by user.")
                 exit(0)
     
     def play(self) -> None:
@@ -112,13 +117,13 @@ class Game:
         5. Switch turns
         6. Repeat until someone wins
         """
-        print("Welcome to N-Row Game!")
-        print("Get 5 in a row (horizontal, vertical, or diagonal) to win!")
-        print("=" * 50)
+        self.printer.print_colored("Welcome to N-Row Game!")
+        self.printer.print_colored("Get 5 in a row (horizontal, vertical, or diagonal) to win!")
+        self.printer.print_colored("=" * 50)
         
         # Display the initial empty board
-        print("\nInitial board:")
-        self.board.render()
+        self.printer.print_colored("\nInitial board:")
+        self.board.render(self.printer)
         
         # Main game loop - continues until someone wins
         while True:
@@ -130,19 +135,19 @@ class Game:
             self.board.place_piece(x, y, player_symbol)
             
             # Display the updated board state
-            print(f"\nBoard after {self.current_player.get_name()}'s move:")
-            self.board.render()
+            self.printer.print_colored(f"\nBoard after {self.current_player.get_name()}'s move:")
+            self.board.render(self.printer)
             
             # Check if this move created a winning condition
             if self.board.check_win(x, y, player_symbol):
                 # Game over - current player wins!
                 winner_name = self.current_player.get_name()
-                print(f"\n🎉 Congratulations! {winner_name} wins! 🎉")
-                print("Thanks for playing!")
+                self.printer.print_colored(f"\n🎉 Congratulations! {winner_name} wins! 🎉")
+                self.printer.print_colored("Thanks for playing!")
                 break  # Exit the game loop
             
             # No winner yet, switch to the other player's turn
             self.switch_turns()
             
             # Optional: Add a small separator for readability
-            print("-" * 30)
+            self.printer.print_colored("-" * 30)
